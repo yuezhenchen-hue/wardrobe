@@ -75,7 +75,7 @@ struct SettingsView: View {
                     HStack {
                         Text("应用名称")
                         Spacer()
-                        Text("智衣橱")
+                        Text("衣橱管家")
                             .foregroundColor(.secondary)
                     }
                 }

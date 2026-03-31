@@ -22,7 +22,7 @@ enum AppTheme {
 }
 
 enum AppStrings {
-    static let appName = "智衣橱"
+    static let appName = "衣橱管家"
     static let wardrobeTab = "衣橱"
     static let recommendTab = "推荐"
     static let diaryTab = "日记"

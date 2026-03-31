@@ -50,7 +50,7 @@ struct OnboardingView: View {
                 .font(.system(size: 80))
                 .foregroundStyle(AppTheme.accentGradient)
 
-            Text("欢迎来到智衣橱")
+            Text("欢迎来到衣橱管家")
                 .font(.largeTitle.bold())
 
             Text("你的专属穿搭助手\n让每天的穿搭变得简单又时尚")
