@@ -39,6 +39,7 @@
 		C8390624BB1D341402055D54 /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B13C555C6D60A097C06C2C /* WeatherService.swift */; };
 		CF9E62A91EC4FC89C8820A1C /* DiaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7320CBB749A4AAB169A52E73 /* DiaryViewModel.swift */; };
 		D0BF363031F9003556A55F63 /* WardrobeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADD5AC3969C0006F0FA6896 /* WardrobeApp.swift */; };
+		D28A19BD6025DABFC1400122 /* ClothingRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD708F0789FAD1F13EC30043 /* ClothingRecognitionService.swift */; };
 		DCF7CDDAFD559E067776EEDA /* AddClothingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE52A3ACEDA55837AB1E3AD2 /* AddClothingView.swift */; };
 		F2797262EE3DDF0067F4EBD8 /* OutfitDiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABA123557E54A201936E991 /* OutfitDiaryView.swift */; };
 		F500EBA755533E1EA9E36676 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D874F454654C32DB517A4F8 /* StorageService.swift */; };
@@ -77,6 +78,7 @@
 		B5DAC0CDADD05BA8304D5E06 /* AIAssistantService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantService.swift; sourceTree = "<group>"; };
 		BADD5AC3969C0006F0FA6896 /* WardrobeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WardrobeApp.swift; sourceTree = "<group>"; };
 		BCCE3E3746DA3F8C869CB2ED /* ColorMatchingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorMatchingService.swift; sourceTree = "<group>"; };
+		BD708F0789FAD1F13EC30043 /* ClothingRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClothingRecognitionService.swift; sourceTree = "<group>"; };
 		C7CF16BE1802235FFEC3CD4D /* RecommendationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngine.swift; sourceTree = "<group>"; };
 		CABA123557E54A201936E991 /* OutfitDiaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitDiaryView.swift; sourceTree = "<group>"; };
 		EF02220A278A26314EFAE217 /* LearningService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningService.swift; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				B5DAC0CDADD05BA8304D5E06 /* AIAssistantService.swift */,
+				BD708F0789FAD1F13EC30043 /* ClothingRecognitionService.swift */,
 				BCCE3E3746DA3F8C869CB2ED /* ColorMatchingService.swift */,
 				EF02220A278A26314EFAE217 /* LearningService.swift */,
 				9A049DD0992BB139C8ACB0BD /* LocationManager.swift */,
@@ -326,6 +329,7 @@
 				A95BCBCE2F568A6C02DCF24E /* ClothingCardView.swift in Sources */,
 				52C14E35FDFB780115DECF39 /* ClothingDetailView.swift in Sources */,
 				9814F3F0266D9C1207EBF71B /* ClothingItem.swift in Sources */,
+				D28A19BD6025DABFC1400122 /* ClothingRecognitionService.swift in Sources */,
 				877655BFFFD3506C7C4F4D70 /* ColorMatchingService.swift in Sources */,
 				883F0D04933B29C3D279D7EB /* Constants.swift in Sources */,
 				02E3F41DCC7872F375F5A6C7 /* ContentView.swift in Sources */,

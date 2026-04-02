@@ -19,10 +19,18 @@ struct AddClothingView: View {
     @State private var imageData: Data?
     @State private var showingCamera = false
 
+    // 识别相关状态
+    @State private var isRecognizing = false
+    @State private var recognitionDone = false
+    @State private var recognitionConfidence: Double = 0
+
+    private let recognizer = ClothingRecognitionService.shared
+
     var body: some View {
         NavigationStack {
             Form {
                 photoSection
+                if recognitionDone { recognitionBanner }
                 basicInfoSection
                 colorSection
                 seasonSection
@@ -45,15 +53,34 @@ struct AddClothingView: View {
         }
     }
 
+    // MARK: - 照片区域
+
     private var photoSection: some View {
         Section {
             VStack(spacing: 12) {
                 if let imageData, let uiImage = UIImage(data: imageData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    ZStack(alignment: .topTrailing) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                        if isRecognizing {
+                            HStack(spacing: 6) {
+                                ProgressView()
+                                    .tint(.white)
+                                Text("识别中...")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                            .padding(8)
+                        }
+                    }
                 }
 
                 HStack(spacing: 16) {
@@ -66,13 +93,61 @@ struct AddClothingView: View {
                     Task {
                         if let data = try? await newItem?.loadTransferable(type: Data.self) {
                             imageData = data
+                            await performRecognition(data: data)
                         }
                     }
+                }
+
+                if imageData == nil {
+                    VStack(spacing: 8) {
+                        Image(systemName: "camera.viewfinder")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        Text("拍照或选择衣物图片，自动识别颜色和品类")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
                 }
             }
             .listRowBackground(Color.clear)
         }
     }
+
+    // MARK: - 识别结果提示
+
+    private var recognitionBanner: some View {
+        Section {
+            HStack(spacing: 10) {
+                Image(systemName: "sparkles")
+                    .foregroundColor(AppTheme.primaryColor)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("已自动识别")
+                        .font(.subheadline.bold())
+                    Text("颜色、品类等信息已自动填入，你可以手动调整")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                if recognitionConfidence > 0 {
+                    Text("\(Int(recognitionConfidence * 100))%")
+                        .font(.caption.bold())
+                        .foregroundColor(recognitionConfidence > 0.5 ? .green : .orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            (recognitionConfidence > 0.5 ? Color.green : Color.orange).opacity(0.1)
+                        )
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    // MARK: - 基本信息
 
     private var basicInfoSection: some View {
         Section("基本信息") {
@@ -89,6 +164,8 @@ struct AddClothingView: View {
             TextField("材质", text: $material)
         }
     }
+
+    // MARK: - 颜色
 
     private var colorSection: some View {
         Section("颜色") {
@@ -124,6 +201,8 @@ struct AddClothingView: View {
         }
     }
 
+    // MARK: - 季节
+
     private var seasonSection: some View {
         Section("适合季节") {
             HStack(spacing: 12) {
@@ -153,6 +232,8 @@ struct AddClothingView: View {
             }
         }
     }
+
+    // MARK: - 风格
 
     private var styleSection: some View {
         Section("穿衣风格") {
@@ -191,13 +272,9 @@ struct AddClothingView: View {
         Section("保暖程度") {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("轻薄")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("轻薄").font(.caption).foregroundColor(.secondary)
                     Spacer()
-                    Text("厚实")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("厚实").font(.caption).foregroundColor(.secondary)
                 }
                 Slider(value: Binding(
                     get: { Double(warmthLevel) },
@@ -215,6 +292,56 @@ struct AddClothingView: View {
             }
         }
     }
+
+    // MARK: - 智能识别
+
+    private func performRecognition(data: Data) async {
+        guard let uiImage = UIImage(data: data) else { return }
+
+        isRecognizing = true
+        let result = await recognizer.recognize(image: uiImage)
+        isRecognizing = false
+
+        withAnimation(.easeInOut(duration: 0.3)) {
+            // 填充颜色
+            if !result.suggestedColors.isEmpty {
+                selectedColors = result.suggestedColors
+            }
+
+            // 填充品类
+            if let cat = result.suggestedCategory {
+                category = cat
+            }
+
+            // 填充子分类
+            if !result.suggestedSubcategory.isEmpty {
+                subcategory = result.suggestedSubcategory
+            }
+
+            // 填充季节
+            if !result.suggestedSeasons.isEmpty {
+                selectedSeasons = Set(result.suggestedSeasons)
+            }
+
+            // 填充风格
+            if !result.suggestedStyles.isEmpty {
+                selectedStyles = Set(result.suggestedStyles)
+            }
+
+            // 自动生成名称
+            if name.isEmpty {
+                let colorName = result.suggestedColors.first?.name ?? ""
+                let catName = result.suggestedCategory?.rawValue ?? "衣物"
+                let subName = result.suggestedSubcategory
+                name = "\(colorName)\(subName.isEmpty ? catName : subName)"
+            }
+
+            recognitionConfidence = result.confidence
+            recognitionDone = true
+        }
+    }
+
+    // MARK: - Helpers
 
     private func warmthEmoji(_ level: Int) -> String {
         switch level {
