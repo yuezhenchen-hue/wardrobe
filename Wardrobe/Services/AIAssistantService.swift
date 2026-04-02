@@ -63,15 +63,13 @@ class AIAssistantService: ObservableObject {
     // MARK: - 规则引擎降级（iOS 17-25 或模型不可用）
 
     private func generateWithRuleEngine(prompt: String) async {
-        // 模拟延迟
         try? await Task.sleep(for: .milliseconds(500))
 
-        let response = generateRuleBasedResponse(for: prompt)
-        let assistantMessage = ChatMessage(role: .assistant, content: response)
+        let assistantMessage = generateRuleBasedResponse(for: prompt)
         messages.append(assistantMessage)
     }
 
-    private func generateRuleBasedResponse(for prompt: String) -> String {
+    private func generateRuleBasedResponse(for prompt: String) -> ChatMessage {
         let lowercased = prompt.lowercased()
 
         if lowercased.contains("搭配") || lowercased.contains("推荐") || lowercased.contains("穿什么") {
@@ -79,29 +77,29 @@ class AIAssistantService: ObservableObject {
         }
 
         if lowercased.contains("天气") || lowercased.contains("温度") {
-            return generateWeatherAdvice()
+            return ChatMessage(role: .assistant, content: generateWeatherAdvice())
         }
 
         if lowercased.contains("颜色") || lowercased.contains("配色") {
-            return generateColorAdvice()
+            return ChatMessage(role: .assistant, content: generateColorAdvice())
         }
 
         if lowercased.contains("买") || lowercased.contains("购物") || lowercased.contains("缺") {
-            return generateShoppingAdvice()
+            return ChatMessage(role: .assistant, content: generateShoppingAdvice())
         }
 
         if lowercased.contains("点评") || lowercased.contains("评价") || lowercased.contains("怎么样") {
-            return generateStyleReview()
+            return ChatMessage(role: .assistant, content: generateStyleReview())
         }
 
         if lowercased.contains("风格") {
-            return generateStyleAdvice()
+            return ChatMessage(role: .assistant, content: generateStyleAdvice())
         }
 
-        return generateGeneralAdvice()
+        return ChatMessage(role: .assistant, content: generateGeneralAdvice())
     }
 
-    private func generateOutfitAdvice() -> String {
+    private func generateOutfitAdvice() -> ChatMessage {
         let engine = RecommendationEngine.shared
         let outfit = engine.generateOutfit(
             from: wardrobeItems,
@@ -111,27 +109,27 @@ class AIAssistantService: ObservableObject {
         )
 
         guard !outfit.items.isEmpty else {
-            return "你的衣橱里衣物还不够多哦，建议先添加一些基本单品，我才能为你搭配出好看的穿搭！"
+            return ChatMessage(role: .assistant, content: "你的衣橱里衣物还不够多哦，建议先添加一些基本单品，我才能为你搭配出好看的穿搭！")
         }
 
         let score = engine.scoreCompleteOutfit(items: outfit.items, occasion: .daily, profile: profile)
         let scoreDesc = score >= 0.8 ? "非常和谐" : score >= 0.6 ? "搭配不错" : "可以尝试"
 
-        var response = "根据今天的天气（\(weather.city) \(weather.temperatureDescription) \(weather.condition.rawValue)），我为你推荐：\n\n"
-
-        for item in outfit.items {
-            let colorStr = item.colors.first?.name ?? ""
-            response += "👉 \(item.category.rawValue)：\(colorStr)\(item.name)\n"
-        }
-
         let colors = outfit.items.compactMap(\.colors.first)
         let harmony = ColorMatchingService.shared.analyzeColorHarmony(colors: colors)
 
-        response += "\n🎨 配色分析：\(harmony.name) — \(harmony.description)"
-        response += "\n⭐ 协调度评分：\(Int(score * 100))分（\(scoreDesc)）"
-        response += "\n\n\(weather.dressingSuggestion)"
+        var response = "根据今天的天气（\(weather.city) \(weather.temperatureDescription) \(weather.condition.rawValue)），我为你推荐这套搭配：\n\n"
+        response += "⭐ 协调度：\(Int(score * 100))分（\(scoreDesc)）\n"
+        response += "🎨 配色：\(harmony.name) — \(harmony.description)\n\n"
+        response += weather.dressingSuggestion
 
-        return response
+        return ChatMessage(
+            role: .assistant,
+            content: response,
+            outfitItems: outfit.items,
+            outfitScore: score,
+            colorHarmony: (harmony.name, harmony.description)
+        )
     }
 
     private func generateWeatherAdvice() -> String {
@@ -276,6 +274,24 @@ struct ChatMessage: Identifiable {
     let role: ChatRole
     let content: String
     let timestamp = Date()
+
+    /// 富内容：推荐的衣物列表（助手推荐搭配时附带）
+    var outfitItems: [ClothingItem]?
+    /// 搭配协调度 (0~1)
+    var outfitScore: Double?
+    /// 配色分析
+    var colorHarmony: (name: String, description: String)?
+
+    init(role: ChatRole, content: String,
+         outfitItems: [ClothingItem]? = nil,
+         outfitScore: Double? = nil,
+         colorHarmony: (name: String, description: String)? = nil) {
+        self.role = role
+        self.content = content
+        self.outfitItems = outfitItems
+        self.outfitScore = outfitScore
+        self.colorHarmony = colorHarmony
+    }
 }
 
 enum ChatRole {

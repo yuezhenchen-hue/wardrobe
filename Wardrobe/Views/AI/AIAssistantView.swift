@@ -164,7 +164,7 @@ struct MessageBubble: View {
 
             if message.role == .user { Spacer(minLength: 50) }
 
-            VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
+            VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
                 Text(message.content)
                     .font(.body)
                     .foregroundColor(message.role == .user ? .white : .primary)
@@ -177,6 +177,10 @@ struct MessageBubble: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
+                if let items = message.outfitItems, !items.isEmpty {
+                    outfitItemsCard(items: items)
+                }
+
                 Text(timeString)
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -188,6 +192,89 @@ struct MessageBubble: View {
                 userAvatar
             }
         }
+    }
+
+    // MARK: - 衣物图片卡片
+
+    private func outfitItemsCard(items: [ClothingItem]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(items) { item in
+                        VStack(spacing: 4) {
+                            ZStack {
+                                if let data = item.imageData, let img = UIImage(data: data) {
+                                    Image(uiImage: img)
+                                        .resizable()
+                                        .scaledToFill()
+                                } else {
+                                    LinearGradient(
+                                        colors: [item.category.color.opacity(0.2), item.category.color.opacity(0.05)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                    Image(systemName: item.category.icon)
+                                        .font(.title3)
+                                        .foregroundColor(item.category.color)
+                                }
+                            }
+                            .frame(width: 72, height: 72)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                            Text(item.name)
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .frame(width: 72)
+
+                            HStack(spacing: 2) {
+                                ForEach(item.colors.prefix(3)) { c in
+                                    Circle().fill(c.color).frame(width: 8, height: 8)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if let score = message.outfitScore {
+                HStack(spacing: 8) {
+                    Text("协调度")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color(.systemGray5))
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(score >= 0.7 ? Color.green : score >= 0.5 ? Color.orange : Color.red)
+                                .frame(width: geo.size.width * score)
+                        }
+                    }
+                    .frame(height: 6)
+
+                    Text("\(Int(score * 100))%")
+                        .font(.caption2.bold())
+                        .foregroundColor(score >= 0.7 ? .green : score >= 0.5 ? .orange : .red)
+                }
+
+                if let harmony = message.colorHarmony {
+                    HStack(spacing: 4) {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.caption2)
+                            .foregroundColor(.purple)
+                        Text("\(harmony.name)")
+                            .font(.caption2.bold())
+                        Text(harmony.description)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     private var assistantAvatar: some View {
