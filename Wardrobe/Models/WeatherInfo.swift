@@ -11,6 +11,8 @@ enum WeatherCondition: String, CaseIterable, Codable {
     case foggy = "雾天"
     case hot = "酷热"
     case cold = "严寒"
+    case thunderstorm = "雷暴"
+    case drizzle = "小雨"
 
     var icon: String {
         switch self {
@@ -23,6 +25,8 @@ enum WeatherCondition: String, CaseIterable, Codable {
         case .foggy: return "cloud.fog.fill"
         case .hot: return "thermometer.sun.fill"
         case .cold: return "thermometer.snowflake"
+        case .thunderstorm: return "cloud.bolt.rain.fill"
+        case .drizzle: return "cloud.drizzle.fill"
         }
     }
 
@@ -37,6 +41,16 @@ enum WeatherCondition: String, CaseIterable, Codable {
         case .foggy: return .gray.opacity(0.7)
         case .hot: return .red
         case .cold: return .blue
+        case .thunderstorm: return .purple
+        case .drizzle: return .teal
+        }
+    }
+
+    /// 是否需要防水/防雨装备
+    var needsRainProtection: Bool {
+        switch self {
+        case .rainy, .thunderstorm, .drizzle: return true
+        default: return false
         }
     }
 }
@@ -73,24 +87,34 @@ struct WeatherInfo: Codable {
     }
 
     var dressingSuggestion: String {
+        var suggestion: String
         switch temperature {
         case ..<5:
-            return "天气寒冷，建议穿厚外套、毛衣、围巾等保暖衣物"
+            suggestion = "天气寒冷，建议穿厚外套、毛衣、围巾等保暖衣物"
         case 5..<10:
-            return "天气较冷，建议穿外套搭配毛衣或卫衣"
+            suggestion = "天气较冷，建议穿外套搭配毛衣或卫衣"
         case 10..<15:
-            return "天气微凉，建议穿薄外套或风衣"
+            suggestion = "天气微凉，建议穿薄外套或风衣"
         case 15..<20:
-            return "天气舒适偏凉，可穿长袖衬衫或薄针织衫"
+            suggestion = "天气舒适偏凉，可穿长袖衬衫或薄针织衫"
         case 20..<25:
-            return "天气舒适，适合穿T恤搭配薄外套"
+            suggestion = "天气舒适，适合穿T恤搭配薄外套"
         case 25..<30:
-            return "天气温暖，适合穿短袖或薄衬衫"
+            suggestion = "天气温暖，适合穿短袖或薄衬衫"
         case 30...:
-            return "天气炎热，建议穿轻薄透气的衣物"
+            suggestion = "天气炎热，建议穿轻薄透气的衣物"
         default:
-            return "请根据体感温度选择合适的衣物"
+            suggestion = "请根据体感温度选择合适的衣物"
         }
+
+        if condition.needsRainProtection {
+            suggestion += "。注意携带雨具，建议穿防水鞋"
+        }
+        if windSpeed > 20 {
+            suggestion += "。风力较大，注意防风保暖"
+        }
+
+        return suggestion
     }
 
     var recommendedWarmthLevel: ClosedRange<Int> {
@@ -101,6 +125,31 @@ struct WeatherInfo: Codable {
         case 20..<25: return 1...3
         case 25...: return 1...2
         default: return 2...4
+        }
+    }
+
+    /// WMO Weather Code → WeatherCondition 映射
+    /// https://open-meteo.com/en/docs (WMO Weather interpretation codes)
+    static func conditionFromWMOCode(_ code: Int) -> WeatherCondition {
+        switch code {
+        case 0:
+            return .sunny
+        case 1, 2:
+            return .cloudy
+        case 3:
+            return .overcast
+        case 45, 48:
+            return .foggy
+        case 51, 53, 55, 56, 57:
+            return .drizzle
+        case 61, 63, 65, 66, 67, 80, 81, 82:
+            return .rainy
+        case 71, 73, 75, 77, 85, 86:
+            return .snowy
+        case 95, 96, 99:
+            return .thunderstorm
+        default:
+            return .cloudy
         }
     }
 

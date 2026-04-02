@@ -6,6 +6,7 @@ class DiaryViewModel: ObservableObject {
     @Published var selectedDate = Date()
 
     private let storage = StorageService.shared
+    private let learning = LearningService.shared
 
     var entriesForSelectedDate: [OutfitDiary] {
         entries.filter {
@@ -55,6 +56,14 @@ class DiaryViewModel: ObservableObject {
     func addEntry(_ entry: OutfitDiary) {
         entries.insert(entry, at: 0)
         saveEntries()
+
+        // 学习信号：日记评分是最强信号
+        learning.recordDiaryRating(outfit: entry.outfit, rating: entry.rating)
+
+        // 记录每件衣物的穿着
+        for item in entry.outfit.items {
+            learning.recordItemWorn(item: item)
+        }
     }
 
     func deleteEntry(_ entry: OutfitDiary) {

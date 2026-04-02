@@ -70,6 +70,10 @@ struct WeatherBannerView: View {
             return [Color(hex: "#95A5A6"), Color(hex: "#BDC3C7")]
         case .cold:
             return [Color(hex: "#2E4057"), Color(hex: "#4A6FA5")]
+        case .thunderstorm:
+            return [Color(hex: "#3D3D6B"), Color(hex: "#5A5A8F")]
+        case .drizzle:
+            return [Color(hex: "#5B8BA0"), Color(hex: "#7BAABE")]
         }
     }
 }

@@ -20,9 +20,16 @@ struct OutfitCardView: View {
                         Text(outfit.name)
                             .font(.headline)
                     }
-                    Text("\(outfit.items.count)件单品 · \(outfit.occasion)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 6) {
+                        Text("\(outfit.items.count)件单品 · \(outfit.occasion)")
+                        if outfit.rating > 0 {
+                            Text("·")
+                            Text("协调度 \(outfit.rating * 20)%")
+                                .foregroundColor(outfit.rating >= 4 ? .green : outfit.rating >= 3 ? .orange : .secondary)
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 }
                 Spacer()
 

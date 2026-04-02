@@ -17,17 +17,23 @@ struct MainTabView: View {
                 }
                 .tag(1)
 
+            AIAssistantView()
+                .tabItem {
+                    Label("助手", systemImage: "sparkles")
+                }
+                .tag(2)
+
             OutfitDiaryView()
                 .tabItem {
                     Label(AppStrings.diaryTab, systemImage: "book")
                 }
-                .tag(2)
+                .tag(3)
 
             ProfileView()
                 .tabItem {
                     Label(AppStrings.profileTab, systemImage: "person.crop.circle")
                 }
-                .tag(3)
+                .tag(4)
         }
         .tint(AppTheme.primaryColor)
     }
