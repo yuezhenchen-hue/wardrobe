@@ -8,7 +8,12 @@ struct ProfileView: View {
     @State private var showingStyleQuiz = false
     @State private var showingShoppingView = false
     @State private var showingSettings = false
+    @State private var showingTryOn = false
+    @State private var showingBodyAnalysis = false
     @State private var selectedPhoto: PhotosPickerItem?
+    @State private var bodyPhoto: PhotosPickerItem?
+    @State private var bodyAnalysisResult: BodyAnalysisService.BodyAnalysisResult?
+    @State private var isAnalyzingBody = false
 
     var body: some View {
         NavigationStack {
@@ -17,6 +22,7 @@ struct ProfileView: View {
                     avatarSection
                     statsOverview
                     quickActions
+                    if showingBodyAnalysis { bodyAnalysisUploadSection }
                     stylePreferences
                     bodyInfoSection
                 }
@@ -41,6 +47,9 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showingTryOn) {
+                TryOnView()
             }
         }
     }
@@ -108,6 +117,14 @@ struct ProfileView: View {
                 }
                 ActionCard(title: "购物清单", icon: "bag", color: .orange) {
                     showingShoppingView = true
+                }
+            }
+            HStack(spacing: 12) {
+                ActionCard(title: "试穿预览", icon: "person.crop.rectangle.stack", color: .pink) {
+                    showingTryOn = true
+                }
+                ActionCard(title: "体态分析", icon: "figure.stand", color: .teal) {
+                    showingBodyAnalysis = true
                 }
             }
         }
@@ -196,6 +213,106 @@ struct ProfileView: View {
                         .foregroundColor(.secondary)
                 }
                 .padding(.top, 4)
+            }
+        }
+        .padding()
+        .cardStyle()
+    }
+
+    // MARK: - 体态分析上传
+
+    private var bodyAnalysisUploadSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "figure.stand")
+                    .foregroundColor(.teal)
+                Text("AI 体态分析")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    withAnimation { showingBodyAnalysis = false }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Text("上传全身照片，AI 自动分析体型比例并推荐穿搭")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            PhotosPicker(selection: $bodyPhoto, matching: .images) {
+                HStack {
+                    Image(systemName: "camera.fill")
+                    Text(isAnalyzingBody ? "分析中..." : "上传全身照片")
+                }
+                .font(.subheadline.bold())
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isAnalyzingBody ? Color.gray : Color.teal)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(isAnalyzingBody)
+            .onChange(of: bodyPhoto) { _, newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        isAnalyzingBody = true
+                        let result = await BodyAnalysisService.shared.analyzeBody(from: image)
+                        bodyAnalysisResult = result
+                        isAnalyzingBody = false
+
+                        if let bodyType = result.estimatedBodyType {
+                            profileVM.profile.bodyType = bodyType
+                            profileVM.saveProfile()
+                        }
+                    }
+                }
+            }
+
+            if let result = bodyAnalysisResult {
+                if result.personDetected {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("分析完成")
+                                .font(.subheadline.bold())
+                        }
+
+                        Text(result.bodyProportionDescription)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        if let bodyType = result.estimatedBodyType {
+                            Text("推荐体型：\(bodyType.rawValue)")
+                                .font(.caption.bold())
+                                .foregroundColor(AppTheme.primaryColor)
+                        }
+
+                        ForEach(result.suggestions, id: \.self) { tip in
+                            HStack(alignment: .top, spacing: 4) {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.orange)
+                                Text(tip)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.green.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundColor(.orange)
+                        Text(result.bodyProportionDescription)
+                            .font(.caption)
+                    }
+                }
             }
         }
         .padding()
