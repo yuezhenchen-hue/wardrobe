@@ -19,6 +19,7 @@
 		49283EBF26089CD6FA2CA5AD /* TryOnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC7880473BFDA8277439CC5 /* TryOnView.swift */; };
 		4C64B67C6F9E50E540F475C7 /* WardrobeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7E1A8C293AA8377CB04FD2 /* WardrobeView.swift */; };
 		4EE8D887BAD0560268C32289 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A049DD0992BB139C8ACB0BD /* LocationManager.swift */; };
+		4F1E6BA2218386D8997504E0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2550C83E3069169BF147334C /* Assets.xcassets */; };
 		52C14E35FDFB780115DECF39 /* ClothingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3045083DDEBA938574C2F3B8 /* ClothingDetailView.swift */; };
 		5669BC03D549751219943FFB /* WardrobeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A47F9E663739B03CE0FDE3 /* WardrobeViewModel.swift */; };
 		59A1A3EC457B76CD046F9D90 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43464050FCC8A40D2CB86B8 /* AIAssistantView.swift */; };
@@ -52,6 +53,7 @@
 		069EE80C2456909D7C303899 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		16A47F9E663739B03CE0FDE3 /* WardrobeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WardrobeViewModel.swift; sourceTree = "<group>"; };
 		206D55E5591A8D76FACF75DC /* WeatherBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBannerView.swift; sourceTree = "<group>"; };
+		2550C83E3069169BF147334C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2852958F82BA46CF2A70F2B9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2E69C838EED39F30E47ED7B5 /* WeatherInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherInfo.swift; sourceTree = "<group>"; };
 		2F1E8BDB8513D31E7D4DE9B1 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 		1A50B7F1FCD6B4E858985E6C /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				2550C83E3069169BF147334C /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -290,6 +293,7 @@
 			buildConfigurationList = B078A7087F68F3CC9F37D445 /* Build configuration list for PBXNativeTarget "Wardrobe" */;
 			buildPhases = (
 				0A950FA19ED778BC6272D60F /* Sources */,
+				C5B6BF21E0A5AA27E314DBD4 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -311,6 +315,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					6EB6579C204B28CA83D59F65 = {
+						DevelopmentTeam = 4A4PLKBGTN;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 154414E0F975CEC67CAF2792 /* Build configuration list for PBXProject "Wardrobe" */;
@@ -331,6 +339,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C5B6BF21E0A5AA27E314DBD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F1E6BA2218386D8997504E0 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0A950FA19ED778BC6272D60F /* Sources */ = {
@@ -408,12 +427,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4A4PLKBGTN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wardrobe/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartwardrobe.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yuezhenchen.wardrobe;
 				PRODUCT_NAME = Wardrobe;
 			};
 			name = Debug;
@@ -422,12 +441,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4A4PLKBGTN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Wardrobe/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartwardrobe.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yuezhenchen.wardrobe;
 				PRODUCT_NAME = Wardrobe;
 			};
 			name = Release;

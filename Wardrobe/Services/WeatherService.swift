@@ -1,15 +1,73 @@
 import Foundation
 import CoreLocation
+import Combine
 
-/// 接入 Open-Meteo 免费天气 API 的真实天气服务
+/// 接入 Open-Meteo 免费天气 API，支持定时自动刷新
 class WeatherService: ObservableObject {
     @Published var currentWeather: WeatherInfo = .sample
     @Published var isLoading = false
     @Published var lastError: String?
+    @Published var lastUpdateTime: Date?
 
     private let baseURL = "https://api.open-meteo.com/v1/forecast"
+    private var refreshTimer: Timer?
+    private var lastLatitude: Double?
+    private var lastLongitude: Double?
+    private var lastCity: String = ""
+
+    /// 每 30 分钟自动刷新一次天气
+    private let refreshInterval: TimeInterval = 30 * 60
+
+    deinit {
+        refreshTimer?.invalidate()
+    }
+
+    // MARK: - 公开接口
 
     func fetchWeather(latitude: Double, longitude: Double, city: String = "") {
+        lastLatitude = latitude
+        lastLongitude = longitude
+        if !city.isEmpty { lastCity = city }
+
+        performFetch(latitude: latitude, longitude: longitude, city: lastCity)
+        startAutoRefresh()
+    }
+
+    func fetchWeather(location: CLLocation?, city: String) {
+        let lat = location?.coordinate.latitude ?? lastLatitude ?? 31.23
+        let lon = location?.coordinate.longitude ?? lastLongitude ?? 121.47
+        fetchWeather(latitude: lat, longitude: lon, city: city)
+    }
+
+    /// App 回到前台时调用：如果上次更新超过 10 分钟，自动刷新
+    func refreshIfStale() {
+        guard let lastUpdate = lastUpdateTime else {
+            refreshNow()
+            return
+        }
+        if Date().timeIntervalSince(lastUpdate) > 10 * 60 {
+            refreshNow()
+        }
+    }
+
+    /// 立刻刷新（用缓存的位置）
+    func refreshNow() {
+        guard let lat = lastLatitude, let lon = lastLongitude else { return }
+        performFetch(latitude: lat, longitude: lon, city: lastCity)
+    }
+
+    // MARK: - 定时刷新
+
+    private func startAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
+            self?.refreshNow()
+        }
+    }
+
+    // MARK: - 网络请求
+
+    private func performFetch(latitude: Double, longitude: Double, city: String) {
         isLoading = true
         lastError = nil
 
@@ -22,7 +80,7 @@ class WeatherService: ObservableObject {
             return
         }
 
-        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 self.isLoading = false
@@ -55,20 +113,18 @@ class WeatherService: ObservableObject {
                     city: city.isEmpty ? "当前位置" : city,
                     date: Date()
                 )
+                self.lastUpdateTime = Date()
             }
         }.resume()
     }
 
-    func fetchWeather(location: CLLocation?, city: String) {
-        let lat = location?.coordinate.latitude ?? 31.23
-        let lon = location?.coordinate.longitude ?? 121.47
-        fetchWeather(latitude: lat, longitude: lon, city: city)
-    }
+    // MARK: - 降级：模拟天气
 
     private func fallbackToSimulated(city: String) {
         isLoading = false
         let month = Calendar.current.component(.month, from: Date())
         currentWeather = generateSeasonalWeather(month: month, city: city.isEmpty ? "未知" : city)
+        lastUpdateTime = Date()
     }
 
     private func generateSeasonalWeather(month: Int, city: String) -> WeatherInfo {
